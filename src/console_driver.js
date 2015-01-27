@@ -1,4 +1,7 @@
+
+
 var numToChar = ["a", "b", "c", "d", "e", "f", "g", "h"];
+
 var charToNum = {
   a: 0,
   b: 1,
