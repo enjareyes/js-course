@@ -21,3 +21,5 @@ var displayBoard = function () {
     console.log(numToChar[i] + " |" + board[i].join(" "));
   }
 };
+
+
