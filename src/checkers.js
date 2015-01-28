@@ -46,19 +46,23 @@ var validMove , validJump;
 
 
 var isvalidMove_white = function(from_row, from_col, torow, tocol) {
+  from_col_plus = (parseInt(from_col)+1)
+
   if (torow == (from_row+1)) {
-    if ((tocol == (from_col + 1)) || (to_col == (from_col-1))) {//if it's in a diagonal only moving once space 
+    if (tocol == (from_col_plus) || (tocol == (from_col-1))) { //if it's in a diagonal only moving once space 
       //if (board[torow][tocol] == ' X ') { //and if the space is empty
-        validMove = true;
+      validMove = true;
      // };  
+    } else {
+      validMove = false;
     };
   } else if (torow == (from_row+2)) { //if it's in a diagonal moving two spaces (for a jump)
-    if ((tocol == from_col + 2) ) {//check if its moving forward two column spaces
+    if ((tocol == from_col_plus + 1) ) {//check if its moving forward two column spaces
       if (board[torow-1][tocol-1] == 'red') {
         validJump = true;
       };
     };
-    if (to_col == (from_col-2)) { //check if it's moving back two column spaces
+    if (tocol == (from_col-2)) { //check if it's moving back two column spaces
       if (board[torow-1][tocol+1] == 'red') {
         validJump = true;
       };
@@ -72,19 +76,23 @@ var isvalidMove_white = function(from_row, from_col, torow, tocol) {
 
 
 var isValidMove_red = function(from_row, from_col, torow, tocol) {
+  from_col_plus = (parseInt(from_col)+1)
+
   if (torow == (from_row-1)) {
-    if ((tocol == from_col - 1) || (to_col == from_col + 1)) {//if it's in a diagonal only moving once space 
-      if (board[torow][tocol] == ' X ') { //and if the space is empty
-        validMove = true
-      };  
+    if ((tocol == (from_col-1)) || (tocol == (from_col_plus))) {//if it's in a diagonal only moving once space 
+      // if (board[torow][tocol] == ' X ') { //and if the space is empty
+        validMove = true;
+      // };  
+    } else {
+      validJump = false;
     };
   } else if (torow == (from_row-2)) { //if it's in a diagonal moving two spaces (for a jump)
-    if ((tocol == from_col - 2) && (board[torow][tocol] == ' X ')) {//check if its moving forward two column spaces
+    if ((tocol == from_col_plus - 3) && (board[torow][tocol] == ' X ')) {//check if its moving forward two column spaces
       if (board[torow+1][tocol+1] == 'red') {
         validJump = true;
       };
     };
-    if ((to_col == from_col + 2) && (board[torow][tocol] == ' X ')) { //check if it's moving back two column spaces
+    if ((tocol == from_col + 2) && (board[torow][tocol] == ' X ')) { //check if it's moving back two column spaces
       if (board[torow+1][tocol-1] == 'red') {
         validJump = true;
       };
@@ -106,8 +114,8 @@ clickCounter = 1;
 var whichClick = function() {
 
     $('.col').click(function() {
-      console.log('----- ');
-      console.log(this);
+      // console.log('----- ');
+      // console.log(this);
       // console.log($(this).parent());
       var columnClass = $(this).attr("class"); //the class of the column being clicked
       var rowClass = $(this).parent().attr("class"); //the class of the row the column is in
@@ -115,10 +123,10 @@ var whichClick = function() {
       var thecolumn = columnClass.slice(-1); //extracting the column number
       
       if (clickCounter === 1) {
-        console.log('-----firstclick');
+        console.log(currentPlayer + 'selected piece: ');
         selectSquare(therow, thecolumn); //using the row and column to call selectSquare();
       } else {
-        console.log('-----secondclick');
+        console.log(currentPlayer + 'moving piece to: ');
         moveTo(therow, thecolumn);
       };
     });
@@ -145,7 +153,7 @@ var selectSquare = function(row, col) {
     from_row = row;
     from_col = col;
     clickCounter = 2;
-    // whichClick();
+    // return whichClick();
   }
 };
 
@@ -164,7 +172,7 @@ var moveTo = function(torow, tocol) {
   var column = rowElement.children();
   var columnElement = $(column[tocol]);
 
-  if (validMove == true || validJump == true) {
+  if ((validMove == true) || (validJump == true)) {
     if (board[torow][tocol] !== ' X ') { 
       $(document).trigger('invalidMove', "You must move to an empty space.");
       whichClick();
@@ -180,12 +188,13 @@ var moveTo = function(torow, tocol) {
       validJump = false;
       validMove = false;
       clickCounter = 1; //reset counter and validmove/jump variables for next move
-        // if (currentPlayer === 'wht') {
-        //   currentPlayer = 'red';
-        // } else { 
-        //   currentPlayer = 'wht';
-        // };
-      whichClick();
+        if (currentPlayer === 'wht') {
+          currentPlayer = 'red';
+        } else { 
+          currentPlayer = 'wht';
+        };
+      console.log("Current players turn: " + currentPlayer);
+      // whichClick();
     } 
   } else {
     console.log("BOTH false inside moveTo")
