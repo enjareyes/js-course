@@ -17,21 +17,19 @@ var resetBoard = function () {
   currentPlayer = whitePlayer;
 
   // states
-  
   // 0 ->wating for my turn
   // 1 -> specting to slect piece
   // 2 -> specting to select target square
 
-  
-redPlayer = {
-  name: 'red',
-  state: 0
-};
+  redPlayer = {
+    name: 'red',
+    state: 0
+  };
 
-whitePlayer = {
-  name: 'wht',
-  state: 1
-};
+  whitePlayer = {
+    name: 'wht',
+    state: 1
+  };
 
   $(document).trigger('boardChange');
 };
@@ -40,17 +38,23 @@ whitePlayer = {
 
 
 var switchUser = function() {
-  if (currentPlayer = whitePlayer) {
+
+  currentPlayer = getCurrentUser();
+
+  if (currentPlayer == whitePlayer) {
+    console.log("making it into switchUser wht");
     whitePlayer.state = 0;
     redPlayer.state = 1;
     currentPlayer = redPlayer;
-  };
-
-  if (currentPlayer = redPlayer) {
+    return currentPlayer
+  } else {
+    console.log("making it into switchUser red");
     redPlayer.state = 0;
     whitePlayer.state = 1;
     currentPlayer = whitePlayer;
+    return currentPlayer
   };
+
 };
 
 
@@ -89,12 +93,21 @@ $(document).on("invalidMove", function(message){  //do I need 'event' argument i
 });
 
 
-var isValidMove = function() {
+
+var isValidMove = function(from_row, from_col, to_row, to_col) {
+  from_col_plus = (parseInt(from_col)); // why wasn't the from_col working like an integer?
+  //from_row_plus = (parseInt(from_row));
+
+  rowElement = $('.row.row-' + numToChar[to_row]);
+  column = rowElement.children();
+  columnElement = $(column[to_col]);
+
   validMove = false;
+
 
   if (currentPlayer === whitePlayer) {
     if (to_row == (from_row+1)) {
-      if (to_col == (from_col) || (to_col == (from_col-1))) { //if it's in a diagonal only moving once space 
+      if ( (to_col == (from_col_plus+1)) || (to_col == (from_col_plus-1)) ) { //if it's in a diagonal only moving once space 
         if (board[to_row][to_col] == ' X ') { //and if the space is empty
         validMove = true;
        };  
@@ -103,7 +116,7 @@ var isValidMove = function() {
   };
   if (currentPlayer === redPlayer) {
     if (to_row == (from_row-1)) {
-      if ((to_col == (from_col-1)) || (to_col == (from_col))) {//if it's in a diagonal only moving once space 
+      if ((to_col == (from_col_plus-1)) || (to_col == (from_col_plus+1))) {//if it's in a diagonal only moving once space 
         if (board[to_row][to_col] == ' X ') { //and if the space is empty
           validMove = true;
         };  
@@ -116,34 +129,48 @@ var isValidMove = function() {
       console.log('no move');
       $(document).trigger('invalidMove', "You cannot move to a red space.");   
       validMove = false;
-    } 
+    } else {
+      validMove = true;
+    };
   };
 
+  console.log(validMove);
   return validMove;
 };
 
 
 
-var jumped_player;
+var jumped_player, jumped_row, jumped_col;
 
-isValidJump = function() {
+
+isValidJump = function(from_row, from_col, to_row, to_col) {
+  from_col_plus = (parseInt(from_col)); // why wasn't the from_col working like an integer?
+  to_col_plus = (parseInt(to_col));
+  rowElement = $('.row.row-' + numToChar[to_row]);
+  column = rowElement.children();
+  columnElement = $(column[to_col]);
+
   validJump = false;
 
   if (currentPlayer === whitePlayer) {
     if (to_row == (from_row+2)) { //if it's in a diagonal moving two spaces (for a jump)
-      if ((to_col == from_col + 1) ) {//check if its moving forward two column spaces
-        if ((board[to_row-1][to_col-1] !== currentPlayer.name) && (board[to_row-1][to_col-1] !== ' X ')) {
-          if (board[to_row][to_col] == ' X ') {
+      if ((to_col_plus == from_col_plus + 2) ) {//check if its moving forward two column spaces
+        if ((board[to_row-1][to_col_plus-1] !== currentPlayer.name) && (board[to_row-1][to_col_plus-1] !== ' X ')) {
+          if (board[to_row][to_col_plus] == ' X ') {
             jumped_player = 'red';
+            jumped_row = (to_row-1);
+            jumped_col = (to_col_plus-1);
             validJump = true;
           };
         };
       };
     };
-    if (to_col == (from_col-2)) { //check if it's moving back two column spaces
-      if ((board[to_row-1][to_col+1] !== currentPlayer.name) && (board[to_row-1][to_col+1] !== ' X ')) {
-        if (board[to_row][to_col] == ' X ') {
+    if (to_col_plus == (from_col_plus-2)) { //check if it's moving back two column spaces
+      if ((board[to_row-1][to_col_plus+1] !== currentPlayer.name) && (board[to_row-1][to_col_plus+1] !== ' X ')) {
+        if (board[to_row][to_col_plus] == ' X ') {
           jumped_player = 'red';
+          jumped_row = (to_row-1);
+          jumped_col = (to_col_plus+1);
           validJump = true;
         };
       };
@@ -152,16 +179,20 @@ isValidJump = function() {
   if (currentPlayer === redPlayer) {
     if (to_row == (from_row-2)) { //if it's in a diagonal moving two spaces (for a jump)
       console.log('----Inside validMove jump section---')
-      // console.log (board[to_row][to_col]);
-      if ((to_col == (from_col - 3)) && (board[to_row][to_col] === ' X ')) { //check if its moving forward two column spaces
-        if ((board[to_row+1][to_col+1] !== currentPlayer.name) && (board[to_row+1][to_col+1] !== ' X ')){
+      // console.log (board[to_row][to_col_plus]);
+      if ((to_col_plus == (from_col_plus - 2)) && (board[to_row][to_col_plus] === ' X ')) { //check if its moving forward two column spaces
+        if ((board[to_row+1][to_col_plus+1] !== currentPlayer.name) && (board[to_row+1][to_col_plus+1] !== ' X ')){
           jumped_player = 'wht';
+          jumped_row = (to_row+1);
+          jumped_col = (to_col_plus+1);
           validJump = true;
         };
       };
-      if ((to_col == from_col + 2) && (board[to_row][to_col] === ' X ')) { //check if it's moving back two column spaces
-        if ((board[to_row+1][to_col-1] !== currentPlayer.name) && (board[to_row+1][to_col-1] !== ' X ')) {
+      if ((to_col_plus == from_col_plus + 2) && (board[to_row][to_col_plus] === ' X ')) { //check if it's moving back two column spaces
+        if ((board[to_row+1][to_col_plus-1] !== currentPlayer.name) && (board[to_row+1][to_col_plus-1] !== ' X ')) {
           jumped_player = 'wht';
+          jumped_row = to_row+1
+          jumped_col = to_col_plus-1
           validJump = true;
         };
       };
@@ -173,28 +204,34 @@ isValidJump = function() {
       console.log('no jump');
       $(document).trigger('invalidMove', "You cannot move to a red space.");   
       validJump = false;
-    } 
+    } else {
+      validJump = true;
+    }
   };
 
+  console.log (validJump);
   return validJump;
 };
 
 
 
-var isValid = function(from_row, from_col, to_row, to_col) {
+var isValid = function() {
   console.log("inside isValid now")
-  from_col = (parseInt(from_col)+1) // why wasn't the from_col working like an integer?
-  rowElement = $('.row.row-' + numToChar[to_row]);
-  column = rowElement.children();
-  columnElement = $(column[to_col]);
+  // from_col = (parseInt(from_col)+1) // why wasn't the from_col working like an integer?
+  // rowElement = $('.row.row-' + numToChar[to_row]);
+  // column = rowElement.children();
+  // columnElement = $(column[to_col]);
 
-
-  isValidMove(from_row, from_col, to_row, to_col);
-  isValidJump(from_row, from_col, to_row, to_col);
-
-  if (validMove === true || validJump === true) {
+  if (isValidMove(from_row, from_col, to_row, to_col) === true) {
+    console.log("True IN ISVALIDmove");
     return true;
   };
+  
+  if (isValidJump(from_row, from_col, to_row, to_col) === true) {
+    console.log("true in isvalidjump");
+    return true;
+  };
+
 };
 
 
@@ -210,7 +247,8 @@ var whichClick = function() {
       var therow = charToNum[rowClass.slice(-1)]; //extracting the row letter and changing it to number
       var thecolumn = columnClass.slice(-1); //extracting the column number
 
-      var currentPlayer = getCurrentUser()
+      currentPlayer = getCurrentUser();
+      console.log(currentPlayer);
 
       if (currentPlayer.state === 1) {
         if (selectSquare(therow, thecolumn) === true) {
@@ -223,11 +261,15 @@ var whichClick = function() {
 
       if (currentPlayer.state === 2) {
         console.log("Waiting to choose target spot..");
-        if(isValid(start_row, start_col, therow, thecolumn) === true) {
-          makeMove(start_row, start_col, therow, thecolumn);
-          switchUser(); 
+        to_row = therow;
+        to_col = thecolumn;
+
+        if(isValid(start_row, start_col, to_row, to_col) === true) {
+          makeMove(start_row, start_col, to_row, to_col);
           validJump = false;
           validMove = false;
+          switchUser(currentPlayer);
+          console.log("Now waiting for " + currentPlayer.name + " to select a piece...")
         };
       };
     });
@@ -258,27 +300,25 @@ var selectSquare = function(row, col) {
 };
 
 
-// var selectTarget = function(from_row, from_col, to_row, to_col) {
-
-//   isValid(from_row, from_col, to_row, to_col); //using data saved from selectSquare and selectTarget arguments
-
-// }
-
-
 var makeMove = function(from_row, from_col, to_row, to_col) {
-console.log("Inside makeMove now...");
+
+  console.log("Inside makeMove now...");
+  
   if (validMove === true) {
-    (console.log("reaching inside validMove===true"));
+    //(console.log("reaching inside validMove===true"));
     board[to_row][to_col] = currentPlayer.name;
     board[from_row][from_col] = ' X ';
     console.log('Successfully moved to row ' + to_row + " : " + board[to_row]);
+    return 
   }
 
   if (validJump === true) {
     board[to_row][to_col] = currentPlayer.name;
     board[from_row][from_col] = ' X ';
-    jumped_player = ' X '; //replace jumped player with an empty space.
-    console.log('Successfully jumped to row ' + to_row + " : " + board[to_row]);
+    board[jumped_row][jumped_col] = ' X '; //replace jumped player with an empty space.
+    console.log('Successfully jumped over ' + jumped_player + ' to row ' + to_row + " : " + board[to_row]);
+    displayBoard();
+    return 
   }
 
 };
