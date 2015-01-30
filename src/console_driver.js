@@ -23,3 +23,4 @@ var displayBoard = function () {
 };
 
 
+$(document).ready(displayBoard)
