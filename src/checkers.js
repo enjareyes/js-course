@@ -14,10 +14,11 @@ var resetBoard = function () {
     ['red', ' X ', 'red', ' X ', 'red', ' X ', 'red', ' X ']
   ];
 
+  $(document).trigger('update');
+
   currentPlayer = whitePlayer;
 
   game_over = false;
-
 
   // states
   // 0 ->wating for my turn
@@ -304,6 +305,7 @@ var whichClick = function() {
 
         if(isValid(start_row, start_col, to_row, to_col) === true) {
           makeMove(start_row, start_col, to_row, to_col);
+          $(document).trigger('update'); //update board
           is_game_over();
           validJump = false;
           validMove = false;
@@ -384,11 +386,32 @@ var conquered_piece = function(jumped_row, jumped_col, jumped_player) {
 }
 
 
-// $(document).ready(function() {
-//   resetBoard();
-// })
 
+$(document).on('update', function () {
+  for (var rows = 0; rows < board.length; rows++) {
+      var row_index = rows;
+      var row_class = '.row-' + numToChar[row_index];
+      //var row_object = $(row_class);
+     
+    for (var cols = 0; cols < 8; cols++) {
+      var col_index = cols;
+      var col_class = '.col-' + col_index;
+      //var col_object = $(col_class)
+      var combo = row_class + " " + col_class
+      var boardSpot = $(combo);
 
+      //$(row).find(col);
+
+      if (board[row_index][col_index] === 'wht') {
+        $(boardSpot).addClass("white piece");
+      };
+
+      if (board[row_index][col_index] === 'red') {
+        $(boardSpot).addClass("red piece");
+      };
+    };
+  };
+});
 
 var displayBoard = function () {
   var column = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -399,28 +422,6 @@ var displayBoard = function () {
   }
 };
 
-
-var showPieces = function () {
-  for (var rows = 0; rows < board.length; rows++) {
-    for (var cols = 0; cols < rows.length; cols++) {
-      var row = '.row-' + rows;
-      var col = '.col-' + cols;
-      $(row).find(col);
-
-      //if board[row][col] === 'wht' {
-        //add classes .wht and .piece 
-      //}
-
-      // if board[row][col] === 'red' {
-      //   add classes .red and .piece
-      // }
-
-      // if board[row][col] === ' X ' {
-      //   empty the span
-      // }
-    };
-  };
-};
 
 
 
