@@ -14,7 +14,6 @@ var resetBoard = function () {
     ['red', ' X ', 'red', ' X ', 'red', ' X ', 'red', ' X ']
   ];
 
-  $(document).trigger('update');
 
   currentPlayer = whitePlayer;
 
@@ -66,8 +65,6 @@ var switchUser = function() {
 };
 
 
-
-
 var getCurrentUser = function() {
   if (whitePlayer.state === 0) {
     currentPlayer = redPlayer;
@@ -97,6 +94,34 @@ var charToNum = {
 }
 
 
+
+$(document).on('update', function () {
+  for (var rowIndex = 0; rowIndex < board.length; rowIndex++) {
+    var theRowClass = '.row-' + numToChar[rowIndex];
+    //var row_object = $(theRowClass);
+     
+    for (var columnIndex = 0; columnIndex < 8; columnIndex++) {
+      var theColClass = '.col-' + columnIndex;
+      //var col_object = $(theColClass)
+      var rowColClass = theRowClass + " " + theColClass;
+      var boardSpot = $(rowColClass);
+
+      //$(row).find(col);
+
+      if (board[rowIndex][columnIndex] === 'wht') {
+        $(boardSpot).addClass("white piece");
+      };
+
+      if (board[rowIndex][columnIndex] === 'red') {
+        $(boardSpot).addClass("red piece");
+      };
+
+    };
+  };
+});
+
+
+
 $(document).on("invalidMove", function(event, message){ 
   alert(message);
 });
@@ -108,8 +133,8 @@ $(document).on("boardChange", function(message){
 
 
 $(document).on("taunt", function() {
-  var taunt_options = ["Gotchoo suckafool", "Your pieces are disappearing quicker than twinkies in the hands of a fat man", "Muahahaha", "Well, ain't that a b.", "Bye Felicia", "Your IQ involves the square root of -1"];
-  var index = Math.floor((Math.random() * 5) + 0); 
+  var taunt_options = ["Well well well.. who's the loser meow", "Don't fret sour puss", "Set my status to busy...busy stealing pieces right meow" ,"Your pieces are disappearing quicker than twinkies in the hands of a fat man", "Muahahaha", "Well, ain't that a b.", "Bye Felicia", "Your IQ involves the square root of -1"];
+  var index = Math.floor((Math.random() * 7) + 0); 
 
   var the_taunt = taunt_options[index]; //select random index from taunt options array
   alert(the_taunt);
@@ -136,14 +161,12 @@ $(document).ready( function() {
 
 var isValidMove = function(from_row, from_col, to_row, to_col) {
   from_col_plus = (parseInt(from_col)); // why wasn't the from_col working like an integer?
-  //from_row_plus = (parseInt(from_row));
 
   rowElement = $('.row.row-' + numToChar[to_row]);
   column = rowElement.children();
   columnElement = $(column[to_col]);
 
   validMove = false;
-
 
   if (currentPlayer === whitePlayer) {
     if (to_row == (from_row+1)) {
@@ -254,18 +277,14 @@ isValidJump = function(from_row, from_col, to_row, to_col) {
 
 
 var isValid = function() {
-  // from_col = (parseInt(from_col)+1) // why wasn't the from_col working like an integer?
-  // rowElement = $('.row.row-' + numToChar[to_row]);
-  // column = rowElement.children();
-  // columnElement = $(column[to_col]);
 
   if (isValidMove(from_row, from_col, to_row, to_col) === true) {
-    //console.log("True IN ISVALIDmove");
+    //console.log("True Inside IsValidMove");
     return true;
   };
   
   if (isValidJump(from_row, from_col, to_row, to_col) === true) {
-    //console.log("true in isvalidjump");
+    //console.log("True inside isValidJump");
     return true;
   };
 
@@ -275,6 +294,7 @@ var isValid = function() {
 var startGame = function() {
   resetBoard();
   alert("ALRIGHT lets play!! First up it's player: " + currentPlayer.name);
+  $(document).trigger('update');
   whichClick();
 }
 
@@ -285,7 +305,7 @@ var whichClick = function() {
       var columnClass = $(this).attr("class"); //the class of the column being clicked
       var rowClass = $(this).parent().attr("class"); //the class of the row the column is in
       var therow = charToNum[rowClass.slice(-1)]; //extracting the row letter and changing it to number
-      var thecolumn = columnClass.slice(-1); //extracting the column number
+      var thecolumn = columnClass.split(' ')[1].slice(-1); //extracting the column number
 
       currentPlayer = getCurrentUser();
 
@@ -305,6 +325,7 @@ var whichClick = function() {
 
         if(isValid(start_row, start_col, to_row, to_col) === true) {
           makeMove(start_row, start_col, to_row, to_col);
+          removeClasses(start_row, start_col);
           $(document).trigger('update'); //update board
           is_game_over();
           validJump = false;
@@ -317,6 +338,23 @@ var whichClick = function() {
     });
 };
 
+
+var removeClasses = function(startingRow, startingColumn) {
+  for (var rowIndex = 0; rowIndex < board.length; rowIndex++) {
+    var theRowClass = '.row-' + numToChar[rowIndex];
+    //var row_object = $(theRowClass);
+     
+    for (var columnIndex = 0; columnIndex < 8; columnIndex++) {
+      var theColClass = '.col-' + columnIndex;
+      //var col_object = $(theColClass)
+      var rowColClass = theRowClass + " " + theColClass;
+      var boardSpot = $(rowColClass);
+      $(boardSpot).removeClass("white red piece");
+  
+    };
+  };
+
+}
 
 var from_row, from_col, to_row, to_col, rowElement, column, columnElement;
 
@@ -385,33 +423,6 @@ var conquered_piece = function(jumped_row, jumped_col, jumped_player) {
     jumped_player.how_many_pieces_left -= 1; // updating pieces left 
 }
 
-
-
-$(document).on('update', function () {
-  for (var rows = 0; rows < board.length; rows++) {
-      var row_index = rows;
-      var row_class = '.row-' + numToChar[row_index];
-      //var row_object = $(row_class);
-     
-    for (var cols = 0; cols < 8; cols++) {
-      var col_index = cols;
-      var col_class = '.col-' + col_index;
-      //var col_object = $(col_class)
-      var combo = row_class + " " + col_class
-      var boardSpot = $(combo);
-
-      //$(row).find(col);
-
-      if (board[row_index][col_index] === 'wht') {
-        $(boardSpot).addClass("white piece");
-      };
-
-      if (board[row_index][col_index] === 'red') {
-        $(boardSpot).addClass("red piece");
-      };
-    };
-  };
-});
 
 var displayBoard = function () {
   var column = [0, 1, 2, 3, 4, 5, 6, 7];
