@@ -25,12 +25,12 @@ body {
 
 .red {
   background: url("funny-cat-faces1.png");
-  background-size: 30px 30px;
+  background-size: 40px 40px;
 }
 
 .white {
   background: url("oh-my-cat-face.png");
-  background-size: 30px 30px;
+  background-size: 40px 40px;
 }
 
 .piece {
@@ -38,5 +38,5 @@ body {
   width: 40px;
   height: 40px;
   display: inline-block;
-  border-radius: 50%;
+  /*border-radius: 50%;*/
 }
