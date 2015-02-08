@@ -1,5 +1,5 @@
-
 var board, currentPlayer, validMove , validJump, redPlayer, whitePlayer, game_over;  //board represents the current state of the checkers board
+var jumped_player, jumped_row, jumped_col;
 
 
 var resetBoard = function () {
@@ -28,53 +28,39 @@ var resetBoard = function () {
     name: 'red',
     state: 0,
     how_many_pieces_left: 12,
-    how_many_turns_taken: 0
+    how_many_turns_taken: 0,
+    which_cat: 'Dat white kat'
   };
 
   whitePlayer = {
     name: 'wht',
     state: 1,
     how_many_pieces_left: 12,
-    how_many_turns_taken: 0
-  };
-
-  //$(document).trigger('boardChange');
-};
-
-
-
-
-var switchUser = function() {
-
-  currentPlayer = getCurrentUser();
-
-  if (currentPlayer == whitePlayer) {
-    //console.log("making it into switchUser wht");
-    whitePlayer.state = 0;
-    redPlayer.state = 1;
-    currentPlayer = redPlayer;
-    return currentPlayer
-  } else {
-    //console.log("making it into switchUser red");
-    redPlayer.state = 0;
-    whitePlayer.state = 1;
-    currentPlayer = whitePlayer;
-    return currentPlayer
+    how_many_turns_taken: 0,
+    which_cat: 'Dat brown kat'
   };
 
 };
+
+
+var startGame = function() {
+  resetBoard();
+  alert("ALRIGHT lets play!! First up it's player: " + currentPlayer.which_cat);
+  $(document).trigger('update');
+  whichClick();
+}
 
 
 var getCurrentUser = function() {
   if (whitePlayer.state === 0) {
     currentPlayer = redPlayer;
-    //console.log(currentPlayer.name);
+    //console.log(currentPlayer.which_cat);
     return currentPlayer;
   };
 
   if (redPlayer.state === 0) {
     currentPlayer = whitePlayer;
-    //console.log(currentPlayer.name);
+    //console.log(currentPlayer.which_cat);
     return currentPlayer;
   };
 };
@@ -93,7 +79,7 @@ var charToNum = {
   h: 7
 }
 
-
+//updates the physical board pieces
 
 $(document).on('update', function () {
   for (var rowIndex = 0; rowIndex < board.length; rowIndex++) {
@@ -105,8 +91,6 @@ $(document).on('update', function () {
       //var col_object = $(theColClass)
       var rowColClass = theRowClass + " " + theColClass;
       var boardSpot = $(rowColClass);
-
-      //$(row).find(col);
 
       if (board[rowIndex][columnIndex] === 'wht') {
         $(boardSpot).addClass("white piece");
@@ -203,9 +187,6 @@ var isValidMove = function(from_row, from_col, to_row, to_col) {
 
 
 
-var jumped_player, jumped_row, jumped_col;
-
-
 isValidJump = function(from_row, from_col, to_row, to_col) {
   from_col_plus = (parseInt(from_col)); // why wasn't the from_col working like an integer?
   to_col_plus = (parseInt(to_col));
@@ -275,7 +256,6 @@ isValidJump = function(from_row, from_col, to_row, to_col) {
 };
 
 
-
 var isValid = function() {
 
   if (isValidMove(from_row, from_col, to_row, to_col) === true) {
@@ -287,77 +267,86 @@ var isValid = function() {
     //console.log("True inside isValidJump");
     return true;
   };
-
 };
 
 
-var startGame = function() {
-  resetBoard();
-  alert("ALRIGHT lets play!! First up it's player: " + currentPlayer.name);
-  $(document).trigger('update');
-  whichClick();
-}
+var switchUser = function() {
+  currentPlayer = getCurrentUser();
+
+  if (currentPlayer == whitePlayer) {
+    //console.log("making it into switchUser wht");
+    whitePlayer.state = 0;
+    redPlayer.state = 1;
+    currentPlayer = redPlayer;
+    return currentPlayer
+  } else {
+    //console.log("making it into switchUser red");
+    redPlayer.state = 0;
+    whitePlayer.state = 1;
+    currentPlayer = whitePlayer;
+    return currentPlayer
+  };
+};
+
 
 var whichClick = function() {
-    $('.col').click(function() {
-      // console.log(this);
-      // console.log($(this).parent());
-      var columnClass = $(this).attr("class"); //the class of the column being clicked
-      var rowClass = $(this).parent().attr("class"); //the class of the row the column is in
-      var therow = charToNum[rowClass.slice(-1)]; //extracting the row letter and changing it to number
-      var thecolumn = columnClass.split(' ')[1].slice(-1); //extracting the column number
+  $('.col').click(function() {
+    // console.log(this);
+    // console.log($(this).parent());
+    var columnClass = $(this).attr("class"); //the class of the column being clicked
+    var rowClass = $(this).parent().attr("class"); //the class of the row the column is in
+    var therow = charToNum[rowClass.slice(-1)]; //extracting the row letter and changing it to number
+    var thecolumn = columnClass.split(' ')[1].slice(-1); //extracting the column number
 
-      currentPlayer = getCurrentUser();
+    currentPlayer = getCurrentUser();
 
-      if (currentPlayer.state === 1) {  
-        if (selectSquare(therow, thecolumn) === true) {
-          start_row = therow;
-          start_col = thecolumn;
-          currentPlayer.state = 2;
-          return 
-        };
+    if (currentPlayer.state === 1) {  
+      if (selectSquare(therow, thecolumn) === true) {
+        start_row = therow;
+        start_col = thecolumn;
+        currentPlayer.state = 2;
+        return 
       };
+    };
 
-      if (currentPlayer.state === 2) {
-        console.log("Waiting for player " + currentPlayer.name + " to choose target spot..");
-        to_row = therow;
-        to_col = thecolumn;
+    if (currentPlayer.state === 2) {
+      console.log("Waiting for player " + currentPlayer.name + " to choose target spot..");
+      to_row = therow;
+      to_col = thecolumn;
 
-        if(isValid(start_row, start_col, to_row, to_col) === true) {
-          makeMove(start_row, start_col, to_row, to_col);
-          removeClasses(start_row, start_col);
-          $(document).trigger('update'); //update board
-          is_game_over();
-          validJump = false;
-          validMove = false;
-          currentPlayer.how_many_turns_taken += 1
-          switchUser(currentPlayer);
-          console.log("Now waiting for " + currentPlayer.name + " to select a piece...")
-        };
+      if(isValid(start_row, start_col, to_row, to_col) === true) {
+        makeMove(start_row, start_col, to_row, to_col);
+        removeClasses(start_row, start_col);
+        $(document).trigger('update'); //update board
+        is_game_over();
+        kingPiece(to_col);
+        validJump = false;
+        validMove = false;
+        currentPlayer.how_many_turns_taken += 1
+        switchUser(currentPlayer);
+        console.log("Now waiting for " + currentPlayer.name + " to select a piece...")
       };
-    });
+    };
+  });
 };
 
 
 var removeClasses = function(startingRow, startingColumn) {
   for (var rowIndex = 0; rowIndex < board.length; rowIndex++) {
     var theRowClass = '.row-' + numToChar[rowIndex];
-    //var row_object = $(theRowClass);
      
     for (var columnIndex = 0; columnIndex < 8; columnIndex++) {
       var theColClass = '.col-' + columnIndex;
-      //var col_object = $(theColClass)
       var rowColClass = theRowClass + " " + theColClass;
       var boardSpot = $(rowColClass);
       $(boardSpot).removeClass("white red piece");
   
     };
   };
-
 }
 
-var from_row, from_col, to_row, to_col, rowElement, column, columnElement;
 
+var from_row, from_col, to_row, to_col, rowElement, column, columnElement;
 
 
 var selectSquare = function(row, col) {
@@ -380,24 +369,7 @@ var selectSquare = function(row, col) {
 };
 
 
-var is_game_over = function() {
-  if (redPlayer.how_many_pieces_left == 0) {
-    game_over = true;
-    $(document).trigger('turnsTaken');
-    alert ("GAME OVER! " + whitePlayer.name + " has won!");
-    return resetBoard();
-  };
-  if (whitePlayer.how_many_pieces_left == 0) {
-    game_over = true;
-    $(document).trigger('turnsTaken');
-    alert ("GAME OVER! " + redPlayer.name + " has won!");
-    return resetBoard();
-  };
-};
-
-
 var makeMove = function(from_row, from_col, to_row, to_col) {
-
   if (validMove === true) {
     //(console.log("reaching inside validMove===true"));
     board[to_row][to_col] = currentPlayer.name;
@@ -417,6 +389,38 @@ var makeMove = function(from_row, from_col, to_row, to_col) {
   }
 };
 
+var is_game_over = function() {
+  if (redPlayer.how_many_pieces_left == 0) {
+    game_over = true;
+    $(document).trigger('turnsTaken');
+    alert ("GAME OVER! " + whitePlayer.which_cat + " has won!");
+    return resetBoard();
+  };
+  if (whitePlayer.how_many_pieces_left == 0) {
+    game_over = true;
+    $(document).trigger('turnsTaken');
+    alert ("GAME OVER! " + redPlayer.which_cat + " has won!");
+    return resetBoard();
+  };
+};
+
+
+var kingPiece = function(tocol) {
+  var theColClass = '.col-' + tocol
+
+  if (board[0][tocol] == 'red') { 
+    var rowColClass = '.row-a ' + theColClass;
+    var boardSpot = $(rowColClass); 
+    $(boardSpot).addClass("king");
+  }
+
+  if (board[7][tocol] == 'wht') {  
+    var rowColClass = '.row-h ' + theColClass;
+    var boardSpot = $(rowColClass);  
+    $(boardSpot).addClass("king");
+  }
+}
+
 
 var conquered_piece = function(jumped_row, jumped_col, jumped_player) {
     board[jumped_row][jumped_col] = ' X '; //replace jumped player with an empty space.
@@ -435,26 +439,9 @@ var displayBoard = function () {
 
 
 
+// var validKingMove = function() {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// }
 
 
 
